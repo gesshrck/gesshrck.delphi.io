@@ -1,0 +1,48 @@
+
+================================================================================
+PARTY MODE (KONAMI CODE EASTER EGG)
+================================================================================
+
+What is it?
+-----------
+"Party Mode" is a hidden feature (Easter Egg) built into the application's mascot component (Delphi). When activated, it triggers a temporary celebration state that overlays visual effects and plays a special sound sequence.
+
+How to Trigger It
+-----------------
+You must use a physical keyboard to activate this feature. The application listens for the classic "Konami Code" sequence. 
+
+Type the following keys in exact order:
+1.  Up Arrow (↑)
+2.  Up Arrow (↑)
+3.  Down Arrow (↓)
+4.  Down Arrow (↓)
+5.  Left Arrow (←)
+6.  Right Arrow (→)
+7.  Left Arrow (←)
+8.  Right Arrow (→)
+9.  Letter 'b'
+10. Letter 'a'
+
+(Note: You do not need to press Start or Enter).
+
+What Happens When Activated?
+----------------------------
+1. Visuals: 
+   - A rainbow gradient overlay appears over the entire screen.
+   - Delphi (the dolphin mascot) temporarily dons a pair of pixelated "deal with it" sunglasses.
+2. Audio:
+   - A fast, high-pitched arpeggio "Party" sound effect plays.
+3. Logging:
+   - An entry is recorded in the session log: "[SESSION] ... Konami Code Activated".
+
+Duration
+--------
+The effect automatically clears after 10 seconds.
+
+Technical Implementation
+------------------------
+Location: `App.tsx` -> `DolphinMascot` component.
+
+Logic:
+A `useEffect` hook attaches a `keydown` event listener to the window. It maintains a rolling array (`keys`) of the last 10 keystrokes. On every keypress, it compares the joined array string against the hardcoded sequence string:
+"ArrowUp,ArrowUp,ArrowDown,ArrowDown,ArrowLeft,ArrowRight,ArrowLeft,ArrowRight,b,a"

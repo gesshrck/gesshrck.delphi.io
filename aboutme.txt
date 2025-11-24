@@ -1,0 +1,110 @@
+
+
+LATIN & GREEK ROOTS FLASHCARD APP - ARCHITECTURE & LOG
+
+================================================================================
+1. ARCHITECTURE MAP
+================================================================================
+
+Entry Point: index.tsx -> AppWrapper (App.tsx)
+
+Component Hierarchy:
+--------------------
+AppWrapper (Main Controller)
+ │
+ ├── GlitterCanvas (Background Effect)
+ │
+ ├── [State: View = 'menu']
+ │    └── CategoryMenu
+ │         ├── Category Buttons
+ │         ├── Mode Switcher (Study/Game)
+ │         └── DolphinMascot (Idle/Welcome)
+ │
+ ├── [State: View = 'flashcards']
+ │    └── AppGame
+ │         ├── Sidebar (Progress & Navigation)
+ │         ├── FlashcardBoard
+ │         │    ├── 3D Card Flip (Front/Back)
+ │         │    └── DerivativeParts (Link Logic)
+ │         └── DolphinMascot (Contextual Hints)
+ │
+ └── [State: View = 'matching']
+      └── MatchingGame
+           ├── Grid Layout (Memory Game)
+           └── DolphinMascot (Win/Loss/Match Reactions)
+
+Data Flow:
+----------
+- Source of Truth: data.ts (Static Array of FlashcardData)
+- Progress State: Lifted to AppWrapper. Persists which cards are "discovered" or "reviewed" 
+  even when switching between Menu and Game modes.
+- Sound System: useSound Hook (App.tsx). synthesized audio (Oscillators) to avoid external asset dependencies.
+- Mascot System: Event-driven. Components trigger `mascotEvent` strings, which `DolphinMascot` 
+  translates into text bubbles using `mascotData.ts`.
+
+================================================================================
+2. SYSTEM FUNCTIONALITY
+================================================================================
+
+A. Flashcard System
+   - Linear progression unlocked by flipping cards.
+   - "Linked Learning": Clicking a root derivative (e.g., 'Photo-' inside 'Synthesis') jumps to that card 
+     and unlocks it immediately.
+   - Visuals: Tailwind CSS for styling, CSS 3D transforms for flipping.
+
+B. Matching Game
+   - Logic: Shuffles a subset of cards based on the selected category.
+   - Splits cards into pairs: Root Card vs Meaning Card.
+   - Win Condition: All pairs matched. Triggers particle effects and mascot celebration.
+
+C. Mascot (Delphi)
+   - Architecture: Listens for `eventTrigger` props.
+   - Content: `mascotData.ts` contains arrays of phrases for various events.
+   - Dynamic Logic: Can insert specific card words into templates (e.g., "Think about {word}!").
+   - Interaction: Clickable (giggles/spins), Konami code listener (Party Mode).
+   - Layout Fix: Uses `pointer-events-none` on container to prevent blocking UI interactions.
+
+D. Session Logging
+   - Centralized `logSession` function in App.tsx.
+   - output: Console logs with timestamp and structured data objects.
+   - Covers: Navigation, Gameplay events (flip, match), Errors.
+
+================================================================================
+3. FUTURE ENHANCEMENTS
+================================================================================
+
+[ ] Spaced Repetition System (SRS): Implement an algorithm (e.g., SuperMemo-2) to schedule card reviews based on user performance.
+[ ] LocalStorage Persistence: Save `progressState` to browser storage so users don't lose progress on refresh.
+[ ] Custom Decks: Allow users to "star" cards and create a custom review deck.
+[ ] Mobile Gestures: Add swipe support for Next/Prev card navigation.
+[ ] Voice Synthesis: Use Web Speech API to pronounce the Latin/Greek roots.
+
+================================================================================
+4. DEBUGGER LOG
+================================================================================
+
+[LOG 001] - Initial Setup
+- Issue: Need to ensure no external assets (images/sounds) cause 404s.
+- Solution: Used Twemoji SVG for mascot and Web Audio API for generated sound effects.
+
+[LOG 002] - Import Errors
+- Issue: `SyntaxError: Importing binding name 'default' cannot be resolved`.
+- Cause: Named exports vs Default exports confusion in `App.tsx`.
+- Solution: Ensured `AppWrapper` is exported as default and index.tsx imports it correctly.
+
+[LOG 003] - Mascot Obstruction
+- Issue: Mascot's transparent container div was blocking clicks on the bottom-right Matching Game tile.
+- Solution: Applied `pointer-events-none` to the parent container and `pointer-events-auto` specifically to the visible dolphin image and speech bubble.
+
+[LOG 004] - Matching Game Layout
+- Issue: Tiles were too large on some screens, pushing content behind the mascot.
+- Solution: Added bottom padding to the scroll container in MatchingGame and adjusted grid gap/size.
+
+[LOG 005] - Session Logging
+- Implementation: Added `logSession` utility.
+- Verification: Console now shows "[SESSION] 10:00:00 AM Card Flipped {root: 'Photos'}"
+
+[LOG 006] - UI Enhancement
+- Action: Updated CategoryMenu Mode Toggle.
+- Change: Replaced static buttons with animated sliding switch.
+- Implementation: CSS absolute positioning with cubic-bezier transition for "spring" effect.

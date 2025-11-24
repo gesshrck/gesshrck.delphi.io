@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Latin &amp; Greek Roots Flashcard Game</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    html {
+      height: 100%;
+      width: 100%;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    .container {
+      width: 100%;
+      height: 100%;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+      animation: fadeInDown 0.8s ease-out;
+    }
+
+    .title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0 0 0.5rem 0;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .subtitle {
+      font-size: 1.2rem;
+      color: #f0e6ff;
+      margin: 0;
+    }
+
+    .card-container {
+      perspective: 1500px;
+      width: 100%;
+      max-width: 600px;
+      height: 400px;
+      margin-bottom: 2rem;
+    }
+
+    .flashcard {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+      cursor: pointer;
+    }
+
+    .flashcard.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 20px;
+      padding: 3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+
+    .card-front {
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    }
+
+    .card-back {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      transform: rotateY(180deg);
+      overflow-y: auto;
+    }
+
+    .root-word {
+      font-size: 4rem;
+      font-weight: 800;
+      color: #667eea;
+      margin-bottom: 1rem;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .origin {
+      font-size: 1.5rem;
+      color: #764ba2;
+      font-style: italic;
+      margin-bottom: 1rem;
+    }
+
+    .meaning {
+      font-size: 2rem;
+      color: #495057;
+      font-weight: 600;
+    }
+
+    .derivatives-container {
+      width: 100%;
+      text-align: left;
+    }
+
+    .derivatives-title {
+      font-size: 1.8rem;
+      color: #ffffff;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .derivative-item {
+      background: rgba(255,255,255,0.2);
+      padding: 0.8rem;
+      margin-bottom: 0.8rem;
+      border-radius: 10px;
+      backdrop-filter: blur(10px);
+    }
+
+    .derivative-word {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.3rem;
+    }
+
+    .derivative-meaning {
+      font-size: 1rem;
+      color: #f0f8ff;
+      line-height: 1.5;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+      animation: fadeInUp 0.8s ease-out;
+    }
+
+    .btn {
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+
+    .btn:active {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #ffffff;
+    }
+
+    .btn-secondary {
+      background: #ffffff;
+      color: #667eea;
+    }
+
+    .progress {
+      color: #ffffff;
+      font-size: 1.2rem;
+      font-weight: 600;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    }
+
+    .flip-hint {
+      color: #f0e6ff;
+      font-size: 1rem;
+      margin-top: 1rem;
+      animation: bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .title {
+        font-size: 2rem;
+      }
+
+      .subtitle {
+        font-size: 1rem;
+      }
+
+      .card-container {
+        height: 350px;
+      }
+
+      .root-word {
+        font-size: 3rem;
+      }
+
+      .controls {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="container">
+   <div class="header">
+    <h1 class="title" id="gameTitle">Latin &amp; Greek Roots</h1>
+    <p class="subtitle" id="subtitle">Master the Building Blocks of Language</p>
+   </div>
+   <div class="card-container">
+    <div class="flashcard" id="flashcard">
+     <div class="card-face card-front">
+      <div class="root-word" id="rootWord">
+       Photos
+      </div>
+      <div class="origin" id="origin">
+       (Greek)
+      </div>
+      <div class="meaning" id="meaning">
+       Light
+      </div>
+     </div>
+     <div class="card-face card-back">
+      <div class="derivatives-container" id="derivatives"><!-- Derivatives will be populated here -->
+      </div>
+     </div>
+    </div>
+   </div>
+   <p class="flip-hint">👆 Click card or press Space to flip | ← → Arrow keys to navigate</p>
+   <div class="controls"><button class="btn btn-secondary" id="prevBtn">← Previous</button> <span class="progress" id="progress">1 / 12</span> <button class="btn btn-secondary" id="nextBtn">Next →</button>
+   </div>
+   <div class="controls" style="margin-top: 1rem;"><button class="btn btn-primary" id="flipBtn">Flip Card</button>
+   </div>
+  </div>
+  <script>
+    const flashcardsData = [
+      {
+        root: "Photos",
+        origin: "Greek",
+        meaning: "Light",
+        derivatives: [
+          { word: "Photograph", parts: "(graph - write, draw)", meaning: "picture drawn by light" },
+          { word: "Telephoto", parts: "(tele - distant)", meaning: "light from far away" },
+          { word: "Photometer", parts: "(metron - measure)", meaning: "a device which measures light" },
+          { word: "Phototropic", parts: "(tropos - turn)", meaning: "turning toward light" },
+          { word: "Photophilia", parts: "(philia - love)", meaning: "love of light" },
+          { word: "Photophobia", parts: "(phobos - fear)", meaning: "fear or dislike of light" },
+          { word: "Photosynthesis", parts: "(syn - together, thesis - putting)", meaning: "a process of putting things together by using light" }
+        ]
+      },
+      {
+        root: "Graph",
+        origin: "Greek",
+        meaning: "Write, draw",
+        derivatives: [
+          { word: "Graphology", parts: "(logos - word, study)", meaning: "study of handwriting" },
+          { word: "Autograph", parts: "(autos - self)", meaning: "self-writing, a person's signature" },
+          { word: "Graphite", parts: "", meaning: "black carbon used for drawing or writing" },
+          { word: "Phonograph", parts: "(phono - sound)", meaning: "a device that writes sound" }
+        ]
+      },
+      {
+        root: "Tele",
+        origin: "Greek",
+        meaning: "Far away, distant",
+        derivatives: [
+          { word: "Television", parts: "(visio - seeing)", meaning: "seeing distant things" },
+          { word: "Telephone", parts: "(phone - sound)", meaning: "sound from far away" },
+          { word: "Telegraph", parts: "(graph - write)", meaning: "writing from a distance" },
+          { word: "Telepathy", parts: "(pathos - feeling)", meaning: "knowing how someone far away feels" }
+        ]
+      },
+      {
+        root: "Metron",
+        origin: "Greek",
+        meaning: "Measure",
+        derivatives: [
+          { word: "Geometry", parts: "(geo - earth)", meaning: "measurement of the earth" },
+          { word: "Thermometer", parts: "(thermos - heat)", meaning: "measure heat" },
+          { word: "Diameter", parts: "(dia - through, across)", meaning: "measure across" },
+          { word: "Centimeter", parts: "(centum - hundred)", meaning: "one hundredth of a meter" },
+          { word: "Anemometer", parts: "(anemos - wind)", meaning: "measures wind speed" }
+        ]
+      },
+      {
+        root: "Tropos",
+        origin: "Greek",
+        meaning: "Turn",
+        derivatives: [
+          { word: "Tropics", parts: "", meaning: "the area of the earth from the equator north to the Tropic of Cancer and south to the Tropic of Capricorn" },
+          { word: "Tropical", parts: "", meaning: "the climate of the earth in the tropics" },
+          { word: "Phototropic", parts: "(photo - light)", meaning: "turning toward light" },
+          { word: "Heliotropic", parts: "(helio - sun)", meaning: "turning toward the sun" },
+          { word: "Tropophilous", parts: "(philia - love)", meaning: "plants or trees which like a change or turning of seasons" }
+        ]
+      },
+      {
+        root: "Philia",
+        origin: "Greek",
+        meaning: "Love, friendship",
+        derivatives: [
+          { word: "Philosopher", parts: "(sophia - wisdom)", meaning: "one who loves wisdom" },
+          { word: "Philadelphia", parts: "(adelphos - brother)", meaning: "city of brotherly love" },
+          { word: "Philanthropist", parts: "(anthropos - man)", meaning: "one who cares about his fellow man" },
+          { word: "Philologist", parts: "(logos - word)", meaning: "one who loves words" }
+        ]
+      },
+      {
+        root: "Phobos",
+        origin: "Greek",
+        meaning: "Fear",
+        derivatives: [
+          { word: "Phobia", parts: "", meaning: "irrational fear" },
+          { word: "Agoraphobia", parts: "(agora - field)", meaning: "fear of open space" },
+          { word: "Claustrophobia", parts: "(claustrum - lock or bolt)", meaning: "fear of closed spaces" },
+          { word: "Zoophobia", parts: "(zoon - animal)", meaning: "fear of animals" },
+          { word: "Hydrophobia", parts: "(hydro - water)", meaning: "fear of water" }
+        ]
+      },
+      {
+        root: "Syn",
+        origin: "Greek",
+        meaning: "With, together",
+        derivatives: [
+          { word: "Symphony", parts: "(phone - sound)", meaning: "sounds that go together" },
+          { word: "Synthesis", parts: "(thesis - putting)", meaning: "putting together" },
+          { word: "Synthetic", parts: "", meaning: "material made by putting chemicals together" },
+          { word: "Photosynthesis", parts: "(photo - light, thesis - putting)", meaning: "a process of putting things together by using light" },
+          { word: "Synonym", parts: "(onoma - name)", meaning: "two words with similar meanings" }
+        ]
+      },
+      {
+        root: "Thesis",
+        origin: "Greek",
+        meaning: "Put, place",
+        derivatives: [
+          { word: "Theme", parts: "", meaning: "an essay or composition on a certain subject with a statement and supporting reasons" },
+          { word: "Parenthesis", parts: "(para - beside)", meaning: "statement beside (or inside) a main sentence" },
+          { word: "Synthetic", parts: "(syn - together)", meaning: "elements put together to make a material like a natural one" },
+          { word: "Hypothesis", parts: "(hypo - under)", meaning: "a statement put under consideration" }
+        ]
+      },
+      {
+        root: "Kinesis",
+        origin: "Greek",
+        meaning: "Movement",
+        derivatives: [
+          { word: "Kinetic", parts: "", meaning: "relating to movement of bodies" },
+          { word: "Kinesiology", parts: "(logos - study)", meaning: "study of human movement" },
+          { word: "Cinema", parts: "", meaning: "motion pictures" },
+          { word: "Kinescope", parts: "(skopeo - look at)", meaning: "a machine which shows pictures of movement" }
+        ]
+      },
+      {
+        root: "Phone",
+        origin: "Greek",
+        meaning: "Sound",
+        derivatives: [
+          { word: "Phonograph", parts: "(graph - write, draw)", meaning: "writing with sound" },
+          { word: "Telephone", parts: "(tele - distant)", meaning: "sound from far away" },
+          { word: "Phonogram", parts: "(gramma - letter)", meaning: "written sound" },
+          { word: "Symphony", parts: "(syn - together)", meaning: "sounds that go together" }
+        ]
+      },
+      {
+        root: "Sonus",
+        origin: "Latin",
+        meaning: "Sound",
+        derivatives: [
+          { word: "Sound", parts: "", meaning: "vibrations perceived by our ears" },
+          { word: "Sonic", parts: "", meaning: "relating to what we can hear" },
+          { word: "Sonnet", parts: "", meaning: "a form of rhyming Italian poetry" },
+          { word: "Sonar", parts: "", meaning: "device that hears sound under water" }
+        ]
+      }
+    ];
+
+    let currentIndex = 0;
+    let isFlipped = false;
+    let shuffledCards = [];
+
+    // Shuffle array using Fisher-Yates algorithm
+    function shuffleArray(array) {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
+    // Initialize shuffled cards
+    shuffledCards = shuffleArray(flashcardsData);
+
+    const defaultConfig = {
+      game_title: "Latin & Greek Roots",
+      subtitle: "Master the Building Blocks of Language",
+      next_button_text: "Next →",
+      previous_button_text: "← Previous",
+      flip_button_text: "Flip Card"
+    };
+
+    function renderCard() {
+      const card = shuffledCards[currentIndex];
+      
+      document.getElementById('rootWord').textContent = card.root;
+      document.getElementById('origin').textContent = `(${card.origin})`;
+      document.getElementById('meaning').textContent = card.meaning;
+      
+      const derivativesContainer = document.getElementById('derivatives');
+      derivativesContainer.innerHTML = `
+        <div class="derivatives-title">Derivatives & Meanings</div>
+        ${card.derivatives.map(d => `
+          <div class="derivative-item">
+            <div class="derivative-word">${d.word} ${d.parts}</div>
+            <div class="derivative-meaning">${d.meaning}</div>
+          </div>
+        `).join('')}
+      `;
+      
+      document.getElementById('progress').textContent = `${currentIndex + 1} / ${shuffledCards.length}`;
+      
+      if (isFlipped) {
+        document.getElementById('flashcard').classList.add('flipped');
+      } else {
+        document.getElementById('flashcard').classList.remove('flipped');
+      }
+    }
+
+    function nextCard() {
+      if (currentIndex < shuffledCards.length - 1) {
+        currentIndex++;
+        isFlipped = false;
+        renderCard();
+      }
+    }
+
+    function prevCard() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        isFlipped = false;
+        renderCard();
+      }
+    }
+
+    function flipCard() {
+      isFlipped = !isFlipped;
+      document.getElementById('flashcard').classList.toggle('flipped');
+    }
+
+    document.getElementById('nextBtn').addEventListener('click', nextCard);
+    document.getElementById('prevBtn').addEventListener('click', prevCard);
+    document.getElementById('flipBtn').addEventListener('click', flipCard);
+    document.getElementById('flashcard').addEventListener('click', flipCard);
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') {
+        nextCard();
+      } else if (e.key === 'ArrowLeft') {
+        prevCard();
+      } else if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        flipCard();
+      }
+    });
+
+    const element = {
+      defaultConfig: defaultConfig,
+      onConfigChange: async (config) => {
+        document.getElementById('gameTitle').textContent = config.game_title || defaultConfig.game_title;
+        document.getElementById('subtitle').textContent = config.subtitle || defaultConfig.subtitle;
+        document.getElementById('nextBtn').textContent = config.next_button_text || defaultConfig.next_button_text;
+        document.getElementById('prevBtn').textContent = config.previous_button_text || defaultConfig.previous_button_text;
+        document.getElementById('flipBtn').textContent = config.flip_button_text || defaultConfig.flip_button_text;
+      },
+      mapToCapabilities: (config) => ({
+        recolorables: [],
+        borderables: [],
+        fontEditable: undefined,
+        fontSizeable: undefined
+      }),
+      mapToEditPanelValues: (config) => new Map([
+        ["game_title", config.game_title || defaultConfig.game_title],
+        ["subtitle", config.subtitle || defaultConfig.subtitle],
+        ["next_button_text", config.next_button_text || defaultConfig.next_button_text],
+        ["previous_button_text", config.previous_button_text || defaultConfig.previous_button_text],
+        ["flip_button_text", config.flip_button_text || defaultConfig.flip_button_text]
+      ])
+    };
+
+    if (window.elementSdk) {
+      window.elementSdk.init(element);
+    }
+
+    renderCard();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a36264185d5194e',t:'MTc2Mzk1ODQwMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
